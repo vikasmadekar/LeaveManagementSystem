@@ -87,38 +87,84 @@ namespace LeaveManagementSystem.Services
             leaveRequest.Status = "Pending";
             leaveRequest.DateSubmitted = DateTime.UtcNow;
 
-            var leaveBalance = await _repository.GetByEmployeeIdAsync(leaveDTO.EmployeId);
-            if (leaveBalance == null)
-                throw new Exception("Leave balance not found!");
-
-            switch (leaveDTO.LeaveType.ToLower())
-            {
-                case "annual":
-                    if (leaveBalance.AnnualLeave <= 0) throw new Exception("No Annual Leave Left!");
-                    leaveBalance.AnnualLeave--;
-                    break;
-                case "sick":
-                    if (leaveBalance.SickLeave <= 0) throw new Exception("No Sick Leave Left!");
-                    leaveBalance.SickLeave--;
-                    break;
-                case "casual":
-                    if (leaveBalance.CasualLeave <= 0) throw new Exception("No Casual Leave Left!");
-                    leaveBalance.CasualLeave--;
-                    break;
-                default:
-                    throw new Exception("Invalid Leave Type!");
-            }
-
-            await _repository.UpdateLeaveBalanceAsync(leaveBalance);
             return await _repository.ApplyLeaveAsync(leaveRequest);
         }
         public async Task<List<LeavRequestess>> GetPendingLeaveRequestsAsync()
         {
             return await _repository.GetPendingLeaveRequestsAsync();
         }
-        
+        public async Task<LeavRequestess> ApproveLeaveRequestAsync(int id)
+        {
+            var leaveRequest = await _repository.GetLeaveRequestByIdAsync(id);
+            if (leaveRequest == null || leaveRequest.Status == "Approved")
+                throw new Exception("Invalid or already approved leave request.");
+
+            var leaveBalance = await _repository.GetLeaveBalanceByEmployeeIdAsync(leaveRequest.EmployeId);
+
+            int leaveDays = (leaveRequest.EndDate - leaveRequest.StartDate).Days + 1;
+
+            switch (leaveRequest.LeaveType.ToLower())
+            {
+                case "annual":
+                    if (leaveBalance.AnnualLeave < leaveDays)
+                        throw new Exception("Insufficient annual leave.");
+                    leaveBalance.AnnualLeave -= leaveDays;
+                    break;
+
+                case "sick":
+                    if (leaveBalance.SickLeave < leaveDays)
+                        throw new Exception("Insufficient sick leave.");
+                    leaveBalance.SickLeave -= leaveDays;
+                    break;
+
+                case "casual":
+                    if (leaveBalance.CasualLeave < leaveDays)
+                        throw new Exception("Insufficient casual leave.");
+                    leaveBalance.CasualLeave -= leaveDays;
+                    break;
+
+                case "other":
+                    if (leaveBalance.OtherLeave == null || leaveBalance.OtherLeave < leaveDays)
+                        throw new Exception("Insufficient other leave.");
+                    leaveBalance.OtherLeave -= leaveDays;
+                    break;
+
+                default:
+                    throw new Exception("Invalid leave type.");
+            }
+
+            leaveRequest.Status = "Approved";
+            leaveRequest.AdminRemarks = "Approved by Admin";
+
+            await _repository.UpdateLeaveBalanceAsync(leaveBalance);
+            await _repository.UpdateLeaveRequestAsync(leaveRequest);
+
+            return leaveRequest;
+        }
+
+        public async Task<LeavRequestess> RejectLeaveRequestAsync(int requestId)
+        {
+            var leaveRequest = await _repository.GetLeaveRequestByIdAsync(requestId);
+
+            if (leaveRequest == null || leaveRequest.Status != "Pending")
+            {
+                return null; // Leave request not found or already approved/rejected
+            }
+
+            leaveRequest.Status = "Rejected";
+            await _repository.UpdateLeaveRequestAsync(leaveRequest);
+
+            return leaveRequest;
+        }
+
+        public async Task<List<LeavDTO>> GetAllLeaveHistoryAsync()
+        {
+            var requests = await _repository.GetAllLeaveRequestsAsync();
+            return _mapper.Map<List<LeavDTO>>(requests);
+        }
+
     }
-    
+
 }
 
 

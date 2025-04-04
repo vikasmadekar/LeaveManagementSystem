@@ -29,18 +29,6 @@ namespace LeaveManagementSystem.Models
 
 
         public string? AdminRemarks { get; set; } // Remarks by Admin/HR
-
-
-
-
-
-
-
-
-
-
-
-
         public DateTime DateSubmitted { get; set; } = DateTime.Now; // Default to current date
 
 

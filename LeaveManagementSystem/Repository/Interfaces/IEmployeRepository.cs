@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using System.Runtime.Intrinsics.X86;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace LeaveManagementSystem.Repository
 {
@@ -19,18 +20,20 @@ namespace LeaveManagementSystem.Repository
         Task<LeavBalanc> GetByEmployeeIdAsync(int employeeId);
         Task<IEnumerable<LeavRequestess>> GetAllLeaveRequestsAsync();
         Task<LeavRequestess> ApplyLeaveAsync(LeavRequestess leaveRequest);
-
-
-
-
-
-
-        
         Task<LeavBalanc> CreateLeaveBalanceAsync(LeavBalanc leaveBalance);
         Task UpdateLeaveBalanceAsync(LeavBalanc leaveBalance);
         Task<List<LeavRequestess>> GetPendingLeaveRequestsAsync();
+        Task<LeavRequestess> GetLeaveRequestByIdAsync(int requestId);
+       Task UpdateLeaveRequestAsync(LeavRequestess request);
+        Task UpdateLeaveRRequestAsync(LeavRequestess leaveRequest);
 
-
+        //------------
       
+        Task<LeavBalanc> GetLeaveBalanceByEmployeeIdAsync(int employeeId); // Appproved Request
+        
+
+
+
+
     }
 }

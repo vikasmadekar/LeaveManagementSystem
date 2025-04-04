@@ -14,9 +14,13 @@ namespace LeaveManagementSystem.Services
         Task<LeavBalanc> GetLeaveBalancesAsync(int id);
         Task<IEnumerable<LeavRequestess>> GetLeaveRequestsAsync();
         Task<LeavRequestess> ApplyLeaveAsync(LeavDTO leaveDTO);
-
         Task<List<LeavRequestess>> GetPendingLeaveRequestsAsync();
-      
+        Task<LeavRequestess> ApproveLeaveRequestAsync(int requestId);
+        Task<LeavRequestess> RejectLeaveRequestAsync(int requestId);
+        Task<List<LeavDTO>> GetAllLeaveHistoryAsync();
+
+
+
 
 
     }

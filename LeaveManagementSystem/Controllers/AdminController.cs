@@ -30,7 +30,48 @@ namespace LeaveManagementSystem.Controllers
 
             return Ok(new { message = "Pending leave requests retrieved successfully.", data = pendingLeaves });
         }
+        [HttpPut("approve-leave/{id}")]
+        public async Task<IActionResult> ApproveLeaveRequest(int id)
+        {
+            try
+            {
+                var result = await _service.ApproveLeaveRequestAsync(id);
+                return Ok(new { message = "Leave approved and balance updated", data = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
-       
+
+        [HttpPut("reject-leave/{id}")]
+        public async Task<IActionResult> RejectLeaveRequest(int id)
+        {
+            var leaveRequest = await _service.RejectLeaveRequestAsync(id);
+
+            if (leaveRequest == null)
+            {
+                return NotFound(new { message = "Leave request not found or already processed." });
+            }
+
+            return Ok(new { message = "Leave request rejected successfully.", data = leaveRequest });
+        }
+        [HttpGet("leave-history")]
+        public async Task<IActionResult> GetAllLeaveHistory()
+        {
+            try
+            {
+                var leaveHistory = await _service.GetAllLeaveHistoryAsync();
+                return Ok(leaveHistory);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+
     }
 }
+

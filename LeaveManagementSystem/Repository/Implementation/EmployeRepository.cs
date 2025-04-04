@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LeaveManagementSystem.Migrations;
 using LeaveManagementSystem.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -71,6 +72,7 @@ namespace LeaveManagementSystem.Repository.Implementation
             return await _context.LeavRequestess.ToListAsync();
         }
 
+
         public async Task<LeavRequestess> ApplyLeaveAsync(LeavRequestess leaveRequest)
         {
             await _context.LeavRequestess.AddAsync(leaveRequest);
@@ -94,7 +96,29 @@ namespace LeaveManagementSystem.Repository.Implementation
                 .Where(lr => lr.Status == "Pending")
                 .ToListAsync();
         }
-      
+
+        public async Task<LeavRequestess> GetLeaveRequestByIdAsync(int requestId)
+        {
+            return await _context.LeavRequestess.FindAsync(requestId);
+        }
+
+        public async Task UpdateLeaveRequestAsync(LeavRequestess request)
+        {
+            _context.LeavRequestess.Update(request);
+            await _context.SaveChangesAsync();
+        }
+        public async Task UpdateLeaveRRequestAsync(LeavRequestess leaveRequest)
+        {
+            _context.LeavRequestess.Update(leaveRequest);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<LeavBalanc> GetLeaveBalanceByEmployeeIdAsync(int employeeId)
+        {
+            return await _context.LeavBalanc
+                                 .FirstOrDefaultAsync(lb => lb.EmployeId == employeeId);
+        }
+        
+
     }
 }
  
