@@ -117,7 +117,8 @@ namespace LeaveManagementSystem.Repository.Implementation
             return await _context.LeavBalanc
                                  .FirstOrDefaultAsync(lb => lb.EmployeId == employeeId);
         }
-        
+
+      
 
     }
 }

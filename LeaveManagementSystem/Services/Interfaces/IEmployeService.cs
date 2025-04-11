@@ -18,6 +18,11 @@ namespace LeaveManagementSystem.Services
         Task<LeavRequestess> ApproveLeaveRequestAsync(int requestId);
         Task<LeavRequestess> RejectLeaveRequestAsync(int requestId);
         Task<List<LeavDTO>> GetAllLeaveHistoryAsync();
+        string GetToken(Employe employe);
+
+
+
+
 
 
 

@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using FluentValidation.AspNetCore;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace LeaveManagementSystem
 {
@@ -26,10 +29,31 @@ namespace LeaveManagementSystem
             builder.Services.AddScoped<IEmployeRepository, EmployeRepository>();
             builder.Services.AddScoped<IEmployeService, EmployeService>();
 
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var key = Encoding.ASCII.GetBytes(jwtSection["Key"]);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSection["Issuer"],
+                    ValidAudience = jwtSection["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+
             //builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             //builder.Services.AddScoped<IValidator<EmployeDTO>, EmployeValidator>();
             //builder.Services.AddFluentValidationAutoValidation();
-            
+
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 
@@ -43,7 +67,6 @@ namespace LeaveManagementSystem
 
 
 
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -52,10 +75,11 @@ namespace LeaveManagementSystem
                 app.UseSwagger();
                 app.UseSwaggerUI(); 
             }
+            app.UseAuthentication();
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+     
 
 
             app.MapControllers();

@@ -30,8 +30,9 @@ namespace LeaveManagementSystem.Repository
         //------------
       
         Task<LeavBalanc> GetLeaveBalanceByEmployeeIdAsync(int employeeId); // Appproved Request
-        
 
+
+     
 
 
 

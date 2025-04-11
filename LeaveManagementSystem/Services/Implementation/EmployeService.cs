@@ -5,6 +5,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using LeaveManagementSystem.Repository.Implementation;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace LeaveManagementSystem.Services
 {
@@ -12,11 +16,13 @@ namespace LeaveManagementSystem.Services
     {
         private readonly IEmployeRepository _repository;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public EmployeService(IEmployeRepository repository, IMapper mapper)
+        public EmployeService(IEmployeRepository repository, IMapper mapper , IConfiguration configuration)
         {
             _repository = repository;
             _mapper = mapper;
+            _configuration = configuration; 
         }
 
         public async Task<Employe> RegisterAsync(EmployeDTO employeDTO)
@@ -46,6 +52,30 @@ namespace LeaveManagementSystem.Services
             return await _repository.LoginAsync(employeLogin.Email, employeLogin.Password);
         }
 
+        public string GetToken(Employe employe)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, employe.EmployeId.ToString()),
+                    new Claim(ClaimTypes.Email, employe.Email),
+                    new Claim(ClaimTypes.Role, employe.Role ?? "User")
+                }),
+                Expires = DateTime.UtcNow.AddHours(2),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
         public async Task<IEnumerable<Employe>> GetAllEmployeesAsync()
         {
             return await _repository.GetAllAsync();
@@ -162,6 +192,10 @@ namespace LeaveManagementSystem.Services
             var requests = await _repository.GetAllLeaveRequestsAsync();
             return _mapper.Map<List<LeavDTO>>(requests);
         }
+
+
+
+      
 
     }
 

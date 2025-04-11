@@ -2,6 +2,7 @@
 using FluentValidation.Results;
 using LeaveManagementSystem.Models;
 using LeaveManagementSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -46,25 +47,38 @@ namespace LeaveManagementSystem.Controllers
             
         }
 
-    
 
-    [HttpPost("login")]
+
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] EmployeLogin employeLogin)
         {
             try
             {
-                var employe = await _employeService.LoginAsync(employeLogin);
-                if (employe == null) return Unauthorized("Invalid credentials");
+                var employee = await _employeService.LoginAsync(employeLogin);
+                if (employee == null)
+                    return Unauthorized("Invalid credentials");
 
-                return Ok(employe);
+                var token = ((EmployeService)_employeService).GetToken(employee);
+
+                return Ok(new
+                {
+                    message = "Login successful",
+                    token,
+                    user = new
+                    {
+                        employee.EmployeId,
+                        employee.Name,
+                        employee.Email,
+                        employee.Role
+                    }
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
-
         }
-        [HttpGet]
+        [HttpGet("GetAllEmploye")]
 
         public async Task<ActionResult<IEnumerable<Employe>>> GetAllAsync()
         {
@@ -80,10 +94,9 @@ namespace LeaveManagementSystem.Controllers
 
         }
 
-        [HttpGet("Id")]
-
-
-        public async Task<ActionResult<Employe>> Feaththeid(int id)
+        [HttpGet("GetByIdAsync")]
+ 
+        public async Task<ActionResult<Employe>> GetByIdAsync(int id)
         {
             try
             {
@@ -106,7 +119,7 @@ namespace LeaveManagementSystem.Controllers
 
 
         }
-        [HttpPut("{id}")]
+        [HttpPut("UpdateEmployee")]
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeDTO employeDTO)
         {
             var result = await _employeService.UpdateAsync(id, employeDTO);
@@ -114,7 +127,7 @@ namespace LeaveManagementSystem.Controllers
 
 
         }
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteEmploye")]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _employeService.DeleteAsync(id);
