@@ -1,5 +1,6 @@
 ﻿using LeaveManagementSystem.Models;
 using LeaveManagementSystem.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,14 +12,16 @@ namespace LeaveManagementSystem.Controllers
     {
 
         private readonly IEmployeService _service;
-        public AdminController(IEmployeService service)
+        
+        public AdminController(IEmployeService service )
         {
             _service = service;
-
+         
         }
 
 
         [HttpGet("pending-leaves")]
+        [Authorize]
         public async Task<IActionResult> GetPendingLeaveRequests()
         {
             var pendingLeaves = await _service.GetPendingLeaveRequestsAsync();
@@ -31,6 +34,7 @@ namespace LeaveManagementSystem.Controllers
             return Ok(new { message = "Pending leave requests retrieved successfully.", data = pendingLeaves });
         }
         [HttpPut("approve-leave/{id}")]
+        [Authorize]
         public async Task<IActionResult> ApproveLeaveRequest(int id)
         {
             try
@@ -58,6 +62,7 @@ namespace LeaveManagementSystem.Controllers
             return Ok(new { message = "Leave request rejected successfully.", data = leaveRequest });
         }
         [HttpGet("leave-history")]
+        [Authorize]
         public async Task<IActionResult> GetAllLeaveHistory()
         {
             try
