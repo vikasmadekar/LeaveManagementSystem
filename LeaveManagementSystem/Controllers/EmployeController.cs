@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LeaveManagementSystem.PDFHelper;
+using Microsoft.AspNetCore.Mvc;
 using LeaveManagementSystem.Models;
 using LeaveManagementSystem.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization; // ✅ Correct namespace
+
 
 namespace LeaveManagementSystem.Controllers
 {
@@ -51,6 +54,19 @@ namespace LeaveManagementSystem.Controllers
         {
             var leaveRequests = await _service.GetLeaveRequestsAsync();
             return Ok(leaveRequests);
+        }
+
+        [HttpGet("generate/{id}")]
+
+        
+        public async Task<IActionResult> GenerateEmployeePdf(int id)
+        {
+            var employee = await _service.GetEmployeeByIdAsync(id);
+            if (employee == null)
+                return NotFound("Employee not found.");
+
+            var pdfBytes = PDF_Generator.GenerateEmployeePdf(employee); // ✅ Correct usage
+            return File(pdfBytes, "application/pdf", $"Employee_{employee.EmployeId}.pdf");
         }
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+//using LeaveManagementSystem.PDF_Helper;
 
 namespace LeaveManagementSystem.Services
 {
@@ -17,12 +18,17 @@ namespace LeaveManagementSystem.Services
         private readonly IEmployeRepository _repository;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
+        private readonly JwtTokenHelper _tokenHelper;
 
-        public EmployeService(IEmployeRepository repository, IMapper mapper , IConfiguration configuration)
+       // private readonly PDF_Generator _pDF_Generator;
+
+        public EmployeService(IEmployeRepository repository, IMapper mapper , IConfiguration configuration, JwtTokenHelper tokenHelper)//PDF_Generator pDF_Generator)
         {
             _repository = repository;
             _mapper = mapper;
-            _configuration = configuration; 
+            _configuration = configuration;
+            _tokenHelper = tokenHelper;
+           // _pDF_Generator = pDF_Generator;
         }
 
         public async Task<Employe> RegisterAsync(EmployeDTO employeDTO)
@@ -193,9 +199,39 @@ namespace LeaveManagementSystem.Services
             return _mapper.Map<List<LeavDTO>>(requests);
         }
 
+        //////////////////////////////////////////////////
+        ///
+        public async Task<string> LoginAsync(string email, int password)
+        {
+            var emp = await  _repository.GetByEmailAsync(email);
+            if (emp == null || emp.Password != password) return null;
+
+            emp.RefreshToken = _tokenHelper.GenerateRefreshToken();
+            emp.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            await  _repository.UpdateAsync(emp);
+
+            return $"Access: {_tokenHelper.GenerateAccessToken(emp)}\nRefresh: {emp.RefreshToken}";
+        }
+
+        public async Task<string> RefreshTokenAsync(string email, string refreshToken)
+        {
+            var emp = await _repository.GetByEmailAsync(email);
+            if (emp == null || emp.RefreshToken != refreshToken || emp.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return null;
+
+            emp.RefreshToken = _tokenHelper.GenerateRefreshToken();
+            emp.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            await _repository.UpdateAsync(emp);
+
+            return $"Access: {_tokenHelper.GenerateAccessToken(emp)}\nRefresh: {emp.RefreshToken}";
+        }
 
 
-      
+        /////////////////
+        public async Task<Employe> GetEmployeeByIdAsync(int id)
+        {
+            return await _repository.GetEmployeeByIdAsync(id);
+        }
 
     }
 

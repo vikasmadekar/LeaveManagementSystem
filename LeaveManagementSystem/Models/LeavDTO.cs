@@ -6,7 +6,7 @@ namespace LeaveManagementSystem.Models
     public class LeavDTO
     {
         [Key]
-        public int LeavRequestID { get; set; }  // Primary Key
+        public int LeavRequestID {  get; set; }  // Primary Key
 
         [Required]
         [ForeignKey("Employe")]

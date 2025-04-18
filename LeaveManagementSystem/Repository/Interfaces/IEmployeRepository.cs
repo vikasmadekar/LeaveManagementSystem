@@ -6,6 +6,7 @@ using System.Runtime.Intrinsics.X86;
 using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using iText.Signatures.Validation.V1.Report;
 
 namespace LeaveManagementSystem.Repository
 {
@@ -31,10 +32,22 @@ namespace LeaveManagementSystem.Repository
       
         Task<LeavBalanc> GetLeaveBalanceByEmployeeIdAsync(int employeeId); // Appproved Request
 
+        ///////////////////
+        Task<Employe> GetByEmailAsync(string email);
 
-     
 
 
+        //////////////////////////
+        /// <summary>
+        /// 
+        /// 
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// 
+
+        Task<Employe> GetEmployeeByIdAsync(int id);
 
     }
 }

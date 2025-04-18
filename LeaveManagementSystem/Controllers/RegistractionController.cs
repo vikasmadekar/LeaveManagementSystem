@@ -50,33 +50,17 @@ namespace LeaveManagementSystem.Controllers
 
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] EmployeLogin employeLogin)
+        public async Task<IActionResult> Login(EmployeLogin dto)
         {
-            try
-            {
-                var employee = await _employeService.LoginAsync(employeLogin);
-                if (employee == null)
-                    return Unauthorized("Invalid credentials");
+            var token = await _employeService.LoginAsync(dto.Email, dto.Password);
+            return token == null ? Unauthorized("Invalid login") : Ok(token);
+        }
 
-                var token = ((EmployeService)_employeService).GetToken(employee);
-
-                return Ok(new
-                {
-                    message = "Login successful",
-                    token,
-                    user = new
-                    {
-                        employee.EmployeId,
-                        employee.Name,
-                        employee.Email,
-                        employee.Role
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(EmployeLogin dto)
+        {
+            var token = await  _employeService.RefreshTokenAsync(dto.Email, dto.Password.ToString());
+            return token == null ? Unauthorized("Invalid refresh token") : Ok(token);
         }
         [HttpGet("GetAllEmploye")]
 
@@ -95,7 +79,7 @@ namespace LeaveManagementSystem.Controllers
         }
 
         [HttpGet("GetByIdAsync")]
- 
+        [Authorize]
         public async Task<ActionResult<Employe>> GetByIdAsync(int id)
         {
             try

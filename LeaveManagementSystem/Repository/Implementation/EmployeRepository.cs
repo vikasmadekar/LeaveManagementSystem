@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using iText.Signatures.Validation.V1.Report;
 using LeaveManagementSystem.Migrations;
 using LeaveManagementSystem.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace LeaveManagementSystem.Repository.Implementation
 {
@@ -18,8 +20,8 @@ namespace LeaveManagementSystem.Repository.Implementation
 
         public async Task<Employe> RegisterAsync(Employe employe)
         {
-           
-           
+
+
             await _context.Employe.AddAsync(employe);
             await _context.SaveChangesAsync();
             return employe;
@@ -117,8 +119,37 @@ namespace LeaveManagementSystem.Repository.Implementation
             return await _context.LeavBalanc
                                  .FirstOrDefaultAsync(lb => lb.EmployeId == employeeId);
         }
+        //public async Task<Employe> GetByEmailAsync(string email)
+        //{
+        //    await _context.Employe.FirstOrDefaultAsync(e => e.Email == email);
 
-      
+        //}
+        public async Task<Employe> GetByEmailAsync(string email) =>
+      await _context.Employe.FirstOrDefaultAsync(e => e.Email == email);
+
+
+        ////////////////////////////////////
+        ///
+
+
+        //public List<ReportItem> GetReportItems()
+        //{
+        //    return new List<ReportItem>
+        //{
+        //    new ReportItem { Name = "John Doe", Status = "Present" },
+        //    new ReportItem { Name = "Jane Smith", Status = "Absent" },
+        //    new ReportItem { Name = "Bob Johnson", Status = "On Leave" }
+        //};
+
+
+        //}
+
+        // ✔ Correct Implementation
+        public async Task<Employe> GetEmployeeByIdAsync(int id)
+        {
+            var employee = _context.Employe.FirstOrDefault(e => e.EmployeId == id);
+            return await Task.FromResult(employee);
+        }
 
     }
 }

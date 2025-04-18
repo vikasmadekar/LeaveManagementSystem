@@ -23,9 +23,18 @@ namespace LeaveManagementSystem.Services
 
 
 
+        //////////////
+        ///
+        Task<string> LoginAsync(string email, int password);
+        Task<string> RefreshTokenAsync(string email, string refreshToken);
 
 
 
+        ////
+
+        //Task<Employe> GetEmployeeByIdPDF(int Id);
+
+        Task<Employe> GetEmployeeByIdAsync(int id);
 
 
     }
