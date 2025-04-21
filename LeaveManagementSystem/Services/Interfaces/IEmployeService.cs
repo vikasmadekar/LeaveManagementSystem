@@ -35,7 +35,10 @@ namespace LeaveManagementSystem.Services
         //Task<Employe> GetEmployeeByIdPDF(int Id);
 
         Task<Employe> GetEmployeeByIdAsync(int id);
+        //////////////////
+        ///
 
+        Task<byte[]> GenerateEmployeeQrCodeAsync(int id);
 
     }
 }

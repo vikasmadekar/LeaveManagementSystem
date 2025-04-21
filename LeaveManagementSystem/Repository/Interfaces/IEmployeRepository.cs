@@ -42,10 +42,13 @@ namespace LeaveManagementSystem.Repository
         /// 
         /// 
         /// 
+        /// 
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         /// 
+
+
 
         Task<Employe> GetEmployeeByIdAsync(int id);
 

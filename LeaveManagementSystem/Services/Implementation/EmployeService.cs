@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LeaveManagementSystem.Helper;
 //using LeaveManagementSystem.PDF_Helper;
 
 namespace LeaveManagementSystem.Services
@@ -231,6 +232,17 @@ namespace LeaveManagementSystem.Services
         public async Task<Employe> GetEmployeeByIdAsync(int id)
         {
             return await _repository.GetEmployeeByIdAsync(id);
+        }
+        ///////////////
+        ///
+        public async Task<byte[]> GenerateEmployeeQrCodeAsync(int id)
+        {
+            var employee = await _repository.GetByIdAsync(id);
+            if (employee == null)
+                return null;
+
+            string qrContent = $"ID: {employee.EmployeId}\nName: {employee.Name}\nEmail: {employee.Email}\nDepartment: {employee.Department}\nDesignation: {employee.Designation}";
+            return QrCodeHelper.GenerateQrCode(qrContent);
         }
 
     }
