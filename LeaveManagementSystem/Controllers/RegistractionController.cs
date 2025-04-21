@@ -79,7 +79,7 @@ namespace LeaveManagementSystem.Controllers
         }
 
         [HttpGet("GetByIdAsync")]
-        [Authorize]
+    
         public async Task<ActionResult<Employe>> GetByIdAsync(int id)
         {
             try
@@ -122,8 +122,19 @@ namespace LeaveManagementSystem.Controllers
             return Ok(new { message = "Employee deleted successfully." });
         }
 
+        [HttpGet("qrcode/{id}")]
+        public async Task<IActionResult> GetEmployeeQrCode(int id)
+        {
+            var qrCodeBytes = await _employeService.GenerateEmployeeQrCodeAsync(id);
+            if (qrCodeBytes == null)
+                return NotFound("Employee not found");
+
+            return File(qrCodeBytes, "image/png");
+        }
+
+
     }
-    
+
 }
 
 
