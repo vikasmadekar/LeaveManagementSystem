@@ -241,7 +241,7 @@ namespace LeaveManagementSystem.Services
             if (employee == null)
                 return null;
 
-            string qrContent = $"ID: {employee.EmployeId}\nName: {employee.Name}\nEmail: {employee.Email}\nDepartment: {employee.Department}\nDesignation: {employee.Designation}";
+            string qrContent = $"ID: {employee.EmployeId}\nName: {employee.Name}\nEmail: {employee.Email}\nDepartment: {employee.Department}\nDesignation: {employee.Designation}\nRole: {employee.Role}\nPassaword: {employee.Password}";
             return QrCodeHelper.GenerateQrCode(qrContent);
         }
 
