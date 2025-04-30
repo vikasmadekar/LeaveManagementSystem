@@ -37,6 +37,10 @@ namespace LeaveManagementSystem.Controllers
                     return BadRequest("Invalid employee data");
 
                 var employee = await _employeService.RegisterAsync(employeDTO);
+
+                  
+                  
+             
                 return Ok(new { message = "Employee registered successfully", data = employee });
 
             }
@@ -53,8 +57,13 @@ namespace LeaveManagementSystem.Controllers
         public async Task<IActionResult> Login(EmployeLogin dto)
         {
             var token = await _employeService.LoginAsync(dto.Email, dto.Password);
+
+          
             return token == null ? Unauthorized("Invalid login") : Ok(token);
+
         }
+
+
 
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(EmployeLogin dto)
@@ -107,6 +116,8 @@ namespace LeaveManagementSystem.Controllers
         public async Task<IActionResult> UpdateEmployee(int id, [FromBody] EmployeDTO employeDTO)
         {
             var result = await _employeService.UpdateAsync(id, employeDTO);
+
+           
             return result == null ? NotFound("Employee not found") : Ok(result);
 
 

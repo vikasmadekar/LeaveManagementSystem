@@ -28,7 +28,7 @@ namespace LeaveManagementSystem.Services
         Task<string> LoginAsync(string email, int password);
         Task<string> RefreshTokenAsync(string email, string refreshToken);
 
-
+      
 
         ////
 
@@ -40,6 +40,8 @@ namespace LeaveManagementSystem.Services
 
         Task<byte[]> GenerateEmployeeQrCodeAsync(int id);
 
+
+        
     }
 }
 

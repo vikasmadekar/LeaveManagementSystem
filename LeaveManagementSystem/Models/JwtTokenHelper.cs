@@ -21,7 +21,7 @@ public class JwtTokenHelper
                 new Claim("EmployeId ", employee.EmployeId .ToString()),
                 new Claim(ClaimTypes.Email, employee.Email)
             }),
-            Expires = DateTime.UtcNow.AddMinutes(60),
+            Expires = DateTime.UtcNow.AddMinutes(6),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)

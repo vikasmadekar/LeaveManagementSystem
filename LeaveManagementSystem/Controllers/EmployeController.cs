@@ -50,6 +50,10 @@ namespace LeaveManagementSystem.Controllers
 
         // GET /api/employee/leave-requests
         [HttpGet("leave-requests")]
+
+        [Authorize]
+
+
         public async Task<ActionResult<IEnumerable<LeavRequestess>>> GetLeaveRequests()
         {
             var leaveRequests = await _service.GetLeaveRequestsAsync();
@@ -57,8 +61,9 @@ namespace LeaveManagementSystem.Controllers
         }
 
         [HttpGet("generate/{id}")]
+   
 
-        
+
         public async Task<IActionResult> GenerateEmployeePdf(int id)
         {
             var employee = await _service.GetEmployeeByIdAsync(id);

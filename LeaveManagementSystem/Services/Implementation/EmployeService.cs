@@ -10,6 +10,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using LeaveManagementSystem.Helper;
+using MimeKit;
+using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
+using LeaveManagementSystem.Services.Implementation;
 //using LeaveManagementSystem.PDF_Helper;
 
 namespace LeaveManagementSystem.Services
@@ -20,23 +24,34 @@ namespace LeaveManagementSystem.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly JwtTokenHelper _tokenHelper;
+        private readonly EmailService _emailService;
 
-       // private readonly PDF_Generator _pDF_Generator;
 
-        public EmployeService(IEmployeRepository repository, IMapper mapper , IConfiguration configuration, JwtTokenHelper tokenHelper)//PDF_Generator pDF_Generator)
+
+
+
+        // private readonly PDF_Generator _pDF_Generator;
+
+        public EmployeService(IEmployeRepository repository, IMapper mapper , IConfiguration configuration, JwtTokenHelper tokenHelper, EmailService emailService)//PDF_Generator pDF_Generator)
         {
             _repository = repository;
             _mapper = mapper;
             _configuration = configuration;
             _tokenHelper = tokenHelper;
-           // _pDF_Generator = pDF_Generator;
+
+            _emailService = emailService;
+            // _pDF_Generator = pDF_Generator;
         }
 
         public async Task<Employe> RegisterAsync(EmployeDTO employeDTO)
         {
+            // Map DTO to the Employe model
             var employe = _mapper.Map<Employe>(employeDTO);
+
+            // Register the employee
             var registeredEmploye = await _repository.RegisterAsync(employe);
 
+            // Create the employee's leave balance if it doesn't exist
             var existingLeaveBalance = await _repository.GetByEmployeeIdAsync(registeredEmploye.EmployeId);
             if (existingLeaveBalance == null)
             {
@@ -51,12 +66,32 @@ namespace LeaveManagementSystem.Services
                 await _repository.CreateLeaveBalanceAsync(leaveBalance);
             }
 
+            // Send registration success email
+            await _emailService.SendEmailAsync(
+                registeredEmploye.Email,
+                "Registration Successful",
+                $"<h2>Welcome {registeredEmploye.Name}!</h2><p>Your registration is successful.</p>"
+            );
+
             return registeredEmploye;
         }
 
         public async Task<Employe> LoginAsync(EmployeLogin employeLogin)
         {
-            return await _repository.LoginAsync(employeLogin.Email, employeLogin.Password);
+            // Attempt to retrieve the employee from the repository using email and password
+            var employe = await _repository.LoginAsync(employeLogin.Email, employeLogin.Password);
+
+            // If the employee is found, send the email notification
+            if (employe != null)
+            {
+                await _emailService.SendEmailAsync(
+                    employe.Email,
+                    "Login Notification",
+                    $"<h2>Hello {employe.Name},</h2><p>You have successfully logged in to your account.</p>"
+                );
+            }
+
+            return employe;
         }
 
         public string GetToken(Employe employe)
@@ -95,19 +130,52 @@ namespace LeaveManagementSystem.Services
 
         public async Task<EmployeDTO> UpdateAsync(int id, EmployeDTO employeDTO)
         {
+            // Fetch the existing employee from the repository
             var existingEmploye = await _repository.GetByIdAsync(id);
-            if (existingEmploye == null) return null;
+            if (existingEmploye == null) return null; // Return null if employee doesn't exist
 
-            _mapper.Map(employeDTO, existingEmploye); // ✅ Map DTO to Entity
+            // Map the DTO to the existing employee entity
+            _mapper.Map(employeDTO, existingEmploye);
 
+            // Update the employee in the repository
             var updatedEmploye = await _repository.UpdateAsync(existingEmploye);
-            return _mapper.Map<EmployeDTO>(updatedEmploye);
 
+            // Send email notification about the update 
+            await _emailService.SendEmailAsync(
+                updatedEmploye.Email,
+                "Your Information Has Been Updated",
+                $"<h2>Hello {updatedEmploye.Name},</h2><p>Your information has been successfully updated.</p>"
+            );
+
+            // Return the updated employee as a DTO
+            return _mapper.Map<EmployeDTO>(updatedEmploye);
         }
         public async Task<bool> DeleteAsync(int id)
         {
-            return await _repository.DeleteAsync(id);
+            var employe = await _repository.GetByIdAsync(id);
+
+            // If employee is not found, return false
+            if (employe == null)
+            {
+                return false;
+            }
+
+            // Proceed with the deletion of the employee
+            var isDeleted = await _repository.DeleteAsync(id);
+
+            if (isDeleted)
+            {
+                // Send email notification about the employee's deletion
+                await _emailService.SendEmailAsync(
+                    employe.Email,
+                    "Account Deletion Notification",
+                    $"<h2>Hello {employe.Name},</h2><p>Your account has been successfully deleted. If this was not you, please contact support immediately.</p>"
+                );
+            }
+
+            return isDeleted;
         }
+
 
         public async Task<LeavBalanc> GetLeaveBalancesAsync(int id)
         {
@@ -204,14 +272,18 @@ namespace LeaveManagementSystem.Services
         ///
         public async Task<string> LoginAsync(string email, int password)
         {
+
+
+            
             var emp = await  _repository.GetByEmailAsync(email);
             if (emp == null || emp.Password != password) return null;
 
             emp.RefreshToken = _tokenHelper.GenerateRefreshToken();
-            emp.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(5);
+            emp.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(10);
             await  _repository.UpdateAsync(emp);
 
             return $"Access: {_tokenHelper.GenerateAccessToken(emp)}\nRefresh: {emp.RefreshToken}";
+
         }
 
         public async Task<string> RefreshTokenAsync(string email, string refreshToken)
@@ -238,12 +310,15 @@ namespace LeaveManagementSystem.Services
         public async Task<byte[]> GenerateEmployeeQrCodeAsync(int id)
         {
             var employee = await _repository.GetByIdAsync(id);
-            if (employee == null)
+            if (employee == null)   
                 return null;
 
             string qrContent = $"ID: {employee.EmployeId}\nName: {employee.Name}\nEmail: {employee.Email}\nDepartment: {employee.Department}\nDesignation: {employee.Designation}\nRole: {employee.Role}\nPassaword: {employee.Password}";
             return QrCodeHelper.GenerateQrCode(qrContent);
         }
+
+
+       
 
     }
 

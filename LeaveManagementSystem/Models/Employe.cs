@@ -1,38 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LeaveManagementSystem.Models
+public class Employe
 {
-    public class Employe
-    {
-        [Key]
-        public int EmployeId { get; set; }
+    [Key]
+    public int EmployeId { get; set; }
 
-       
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-       
-        public string Email { get; set; }
+    public string Email { get; set; }
 
-      
-        public int Password { get; set; } // Store hashed password
+    public int Password { get; set; }
 
-      
-        public string Role { get; set; } // "Employee" or "Admin"
+    public string Role { get; set; }
 
-       
-        public string Department { get; set; }
+    public string Department { get; set; }
 
-      
-        public string Designation { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime RefreshTokenExpiryTime { get; set; }
+    public string Designation { get; set; }
+
+    public string RefreshToken { get; set; } = " "; 
 
 
-
-
-
-
-
-    }
+    public DateTime RefreshTokenExpiryTime { get; set; }
 }
-

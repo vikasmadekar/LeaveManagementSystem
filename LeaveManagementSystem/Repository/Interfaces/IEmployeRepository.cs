@@ -52,5 +52,9 @@ namespace LeaveManagementSystem.Repository
 
         Task<Employe> GetEmployeeByIdAsync(int id);
 
+        
+        Task<Employe> AddAsync(Employe employe);
+        Task<Employe> GetByEmailAndPasswordAsync(string email, int password);
+        
     }
 }

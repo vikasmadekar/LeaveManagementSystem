@@ -6,6 +6,6 @@
 
 
         public int Password { get; set; }
-
     }
+   
 }

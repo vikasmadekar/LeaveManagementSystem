@@ -12,14 +12,15 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using LeaveManagementSystem.PDFHelper; // ? CORRECT (matches your folder and namespace) 
+using LeaveManagementSystem.PDFHelper;
+using LeaveManagementSystem.Services.Implementation; // ? CORRECT (matches your folder and namespace) 
 
 
 namespace LeaveManagementSystem
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main(string[] args )
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +29,17 @@ namespace LeaveManagementSystem
             builder.Services.AddControllers();
             builder.Services.AddDbContext<LDbContext>(option =>
             option.UseSqlServer(builder.Configuration.GetConnectionString("DBCS")));
+            builder.Services.Configure<EmailConfiguration>(
+                                                                   // This Is Used to  Email sending .......
+            builder.Configuration.GetSection("EmailConfiguration"));
+
+
+
+            builder.Services.AddSingleton<EmailService>(); // Registered The Emaiil service
+
             builder.Services.AddScoped<IEmployeRepository, EmployeRepository>();
             builder.Services.AddScoped<IEmployeService, EmployeService>();
+         
             builder.Services.AddSingleton<JwtTokenHelper>();
             builder.Services.AddEndpointsApiExplorer();
 
@@ -59,6 +69,7 @@ namespace LeaveManagementSystem
             var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(x =>
+
                 {
                     x.RequireHttpsMetadata = false;
                     x.SaveToken = true;
@@ -89,6 +100,7 @@ namespace LeaveManagementSystem
 
 
 
+
             var app = builder.Build();
 
             // Configure middleware
@@ -105,6 +117,11 @@ namespace LeaveManagementSystem
         }
     }
 }
+
+
+
+
+
 
 
 

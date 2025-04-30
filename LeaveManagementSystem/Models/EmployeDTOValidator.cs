@@ -13,7 +13,7 @@ namespace LeaveManagementSystem.Models
             RuleFor(e => e.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Invalid email format.")
-                .MaximumLength(20).WithMessage("Email cannot exceed 20 characters.");
+                .MaximumLength(25).WithMessage("Email cannot exceed 25 characters.");
 
 
 

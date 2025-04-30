@@ -2,8 +2,10 @@
 using iText.Signatures.Validation.V1.Report;
 using LeaveManagementSystem.Migrations;
 using LeaveManagementSystem.Models;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace LeaveManagementSystem.Repository.Implementation
@@ -11,20 +13,32 @@ namespace LeaveManagementSystem.Repository.Implementation
     public class EmployeRepository : IEmployeRepository
     {
         private readonly LDbContext _context;
+        private readonly ILogger<EmployeRepository> _logger;
 
-        public EmployeRepository(LDbContext context)
+        public EmployeRepository(LDbContext context, ILogger<EmployeRepository> logger)
         {
             _context = context;
-
+            _logger = logger;
         }
 
         public async Task<Employe> RegisterAsync(Employe employe)
         {
 
 
-            await _context.Employe.AddAsync(employe);
-            await _context.SaveChangesAsync();
-            return employe;
+            try
+
+            {
+                _logger.LogInformation("Fetching The Employee Database...");
+                await _context.Employe.AddAsync(employe);
+                await _context.SaveChangesAsync();
+                return employe;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "The Empoyee can not be saved error occured ");
+                    throw;
+           
+            }
         }
 
         public async Task<Employe> LoginAsync(string email, int password)
@@ -124,7 +138,7 @@ namespace LeaveManagementSystem.Repository.Implementation
         //    await _context.Employe.FirstOrDefaultAsync(e => e.Email == email);
 
         //}
-        public async Task<Employe> GetByEmailAsync(string email) =>
+        public async Task<Employe> GetByEmailAsync(string email ) =>
       await _context.Employe.FirstOrDefaultAsync(e => e.Email == email);
 
 
@@ -151,8 +165,24 @@ namespace LeaveManagementSystem.Repository.Implementation
             return await Task.FromResult(employee);
         }
 
+        public async Task<Employe> AddAsync(Employe employe)
+        {
+            await _context.Employe.AddAsync(employe);
+            await _context.SaveChangesAsync();
+            return employe;
+        }
+
+
+
+
+        public async Task<Employe> GetByEmailAndPasswordAsync(string email, int password)
+        {
+            return await _context.Employe
+                .FirstOrDefaultAsync(e => e.Email == email && e.Password == password);
+        }
+
     }
 }
- 
+
 
 
